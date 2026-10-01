@@ -1,0 +1,14 @@
+﻿# Build artifacts
+firmware/build/
+*.bin
+*.hex
+*.elf
+*.o
+*.d
+*.su
+
+# IDE / OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
