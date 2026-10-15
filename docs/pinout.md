@@ -54,13 +54,13 @@
 
 * **Первинне тактування:** Внутрішній високостабільний RC-генератор HSI = 16 МГц *(RM0383, Section 6.2.2, с. 97)*.
 * **Головний помножувач PLL (RM0383, Section 6.2.3, с. 97; Section 6.3.2, с. 105):**
-  $$\text{VCO\_IN} = \frac{\text{HSI}}{\text{PLLM}} = \frac{16\text{ МГц}}{16} = 1.0\text{ МГц}$$
-  $$\text{VCO\_OUT} = \text{VCO\_IN} \times \text{PLLN} = 1.0\text{ МГц} \times 336 = 336\text{ МГц}$$
-  $$\text{SYSCLK} = \frac{\text{VCO\_OUT}}{\text{PLLP}} = \frac{336\text{ МГц}}{4} = \mathbf{84\text{ МГц}}$$
+  $$\text{VCO}_{\text{IN}} = \frac{\text{HSI}}{\text{PLLM}} = \frac{16\text{ МГц}}{16} = 1.0\text{ МГц}$$
+  $$\text{VCO}_{\text{OUT}} = \text{VCO}_{\text{IN}} \times \text{PLLN} = 1.0\text{ МГц} \times 336 = 336\text{ МГц}$$
+  $$\text{SYSCLK} = \frac{\text{VCO}_{\text{OUT}}}{\text{PLLP}} = \frac{336\text{ МГц}}{4} = \mathbf{84\text{ МГц}}$$
 * **Шина AHB (HCLK):** Prescaler = 1 $\rightarrow$ **84 МГц** (тактування ядра Cortex-M4 і портів GPIO, RM0383, с. 109).
 * **Шина APB1 (PCLK1, Low Speed Peripheral):**
   * Prescaler = 2 $\rightarrow$ $f_{\text{APB1}} = \frac{84}{2} = \mathbf{42\text{ МГц}}$ (максимум для STM32F411 — 50 МГц, RM0383, с. 108).
-  * Тактування таймерів APB1 (TIM3): оскільки подільник APB1 $\neq 1$, частота множиться на 2 $\rightarrow$ $f_{\text{TIM\_CLK}} = 42\text{ МГц} \times 2 = \mathbf{84\text{ МГц}}$ *(RM0383, Section 6.2, с. 95; Section 6.3.21, с. 136)*.
+  * Тактування таймерів APB1 (TIM3): оскільки подільник APB1 $\neq 1$, частота множиться на 2 $\rightarrow$ $f_{\text{TIMCLK}} = 42\text{ МГц} \times 2 = \mathbf{84\text{ МГц}}$ *(RM0383, Section 6.2, с. 95; Section 6.3.21, с. 136)*.
 * **Шина APB2 (PCLK2, High Speed Peripheral):**
   * Prescaler = 1 $\rightarrow$ $f_{\text{APB2}} = \mathbf{84\text{ МГц}}$ (тактування USART1, RM0383, с. 108).
 
@@ -100,7 +100,7 @@
   * OV7670 Camera (активне захоплення пікселів): 18.0 мА *(OV7670 DS, с. 5)*
   * FT232RL (активна передача даних по UART): 15.0 мА *(DS_FT232R, с. 15)*
   * **Сумарний піковий струм на лінії 3.3 В:**
-    $$I_{\text{total\_3V3}} = 25.0 + 3.9 + 6.43 + 25.0 + 18.0 + 15.0 = \mathbf{93.33\text{ мА}}$$
+    $$I_{\text{total}} = 25.0 + 3.9 + 6.43 + 25.0 + 18.0 + 15.0 = \mathbf{93.33\text{ мА}}$$
   * **Коефіцієнт запасу:** $\frac{500\text{ мА}}{93.33\text{ мА}} \approx \mathbf{5.35}$ (лінія навантажена лише на 18.6% від номіналу).
 
 * **Живлення силового навантаження (Сервопривід SG92R):**
