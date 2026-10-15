@@ -54,32 +54,32 @@
 
 * **Первинне тактування:** Внутрішній високостабільний RC-генератор HSI = 16 МГц *(RM0383, Section 6.2.2, с. 97)*.
 * **Головний помножувач PLL (RM0383, Section 6.2.3, с. 97; Section 6.3.2, с. 105):**
-  $$\text{VCO}_{\text{IN}} = \frac{\text{HSI}}{\text{PLLM}} = \frac{16\text{ МГц}}{16} = 1.0\text{ МГц}$$
-  $$\text{VCO}_{\text{OUT}} = \text{VCO}_{\text{IN}} \times \text{PLLN} = 1.0\text{ МГц} \times 336 = 336\text{ МГц}$$
-  $$\text{SYSCLK} = \frac{\text{VCO}_{\text{OUT}}}{\text{PLLP}} = \frac{336\text{ МГц}}{4} = \mathbf{84\text{ МГц}}$$
+  * Вхідна частота VCO: $f_{\text{VCO,IN}} = \frac{f_{\text{HSI}}}{\text{PLLM}} = \frac{16\text{ МГц}}{16} = 1.0\text{ МГц}$
+  * Вихідна частота VCO: $f_{\text{VCO,OUT}} = f_{\text{VCO,IN}} \times \text{PLLN} = 1.0\text{ МГц} \times 336 = 336\text{ МГц}$
+  * Системна частота SYSCLK: $f_{\text{SYSCLK}} = \frac{f_{\text{VCO,OUT}}}{\text{PLLP}} = \frac{336\text{ МГц}}{4} = \mathbf{84\text{ МГц}}$
 * **Шина AHB (HCLK):** Prescaler = 1 $\rightarrow$ **84 МГц** (тактування ядра Cortex-M4 і портів GPIO, RM0383, с. 109).
 * **Шина APB1 (PCLK1, Low Speed Peripheral):**
-  * Prescaler = 2 $\rightarrow$ $f_{\text{APB1}} = \frac{84}{2} = \mathbf{42\text{ МГц}}$ (максимум для STM32F411 — 50 МГц, RM0383, с. 108).
-  * Тактування таймерів APB1 (TIM3): оскільки подільник APB1 $\neq 1$, частота множиться на 2 $\rightarrow$ $f_{\text{TIMCLK}} = 42\text{ МГц} \times 2 = \mathbf{84\text{ МГц}}$ *(RM0383, Section 6.2, с. 95; Section 6.3.21, с. 136)*.
+  * Prescaler = 2 $\rightarrow$ $f_{\text{APB1}} = \frac{84}{2} = 42\text{ МГц}$ (максимум для STM32F411 — 50 МГц, RM0383, с. 108).
+  * Тактування таймерів APB1 (TIM3): оскільки подільник APB1 $\neq 1$, частота множиться на 2 $\rightarrow$ $f_{\text{TIMCLK}} = 42\text{ МГц} \times 2 = 84\text{ МГц}$ *(RM0383, Section 6.2, с. 95; Section 6.3.21, с. 136)*.
 * **Шина APB2 (PCLK2, High Speed Peripheral):**
-  * Prescaler = 1 $\rightarrow$ $f_{\text{APB2}} = \mathbf{84\text{ МГц}}$ (тактування USART1, RM0383, с. 108).
+  * Prescaler = 1 $\rightarrow$ $f_{\text{APB2}} = 84\text{ МГц}$ (тактування USART1, RM0383, с. 108).
 
 ### Розрахунок інтерфейсів:
 1. **Шина I2C1 (Standard Mode 100 кГц, RM0383, Section 18.6.8, с. 499):**
    * Період шини: $T = 10\text{ мкс}$, півперіод $T_{\text{high}} = T_{\text{low}} = 5\text{ мкс}$.
    * Значення регістра `CCR`:
-     $$\text{CCR} = \frac{T_{\text{high}}}{T_{\text{PCLK1}}} = \frac{5\text{ мкс}}{\frac{1}{42\text{ МГц}}} = 5\text{ мкс} \times 42\text{ МГц} = \mathbf{210} \quad (\text{0x00D2})$$
+     $$\text{CCR} = \frac{T_{\text{high}}}{T_{\text{PCLK1}}} = \frac{5\text{ мкс}}{\frac{1}{42\text{ МГц}}} = 5\text{ мкс} \times 42\text{ МГц} = 210 \quad (\text{0x00D2})$$
    * Значення регістра `TRISE` (максимальний час наростання 1000 нс, RM0383, Section 18.6.9, с. 500):
-     $$\text{TRISE} = (1000\text{ нс} \times 42\text{ МГц}) + 1 = 42 + 1 = \mathbf{43}$$
+     $$\text{TRISE} = (1000\text{ нс} \times 42\text{ МГц}) + 1 = 42 + 1 = 43$$
 2. **Шина SPI2 (Winbond W25Q64JV, RM0383, Section 20.5.1, с. 598):**
    * Джерело тактування: APB1 (42 МГц).
-   * Подільник `SPI_BAUDRATEPRESCALER_2` (біти BR[2:0] = 000): $f_{\text{SCK}} = \frac{42\text{ МГц}}{2} = \mathbf{21\text{ МГц}}$ (відповідає ліміту W25Q64 до 133 МГц і забезпечує надійність сигналу на макетній платі).
+   * Подільник `SPI_BAUDRATEPRESCALER_2` (біти BR[2:0] = 000): $f_{\text{SCK}} = \frac{42\text{ МГц}}{2} = 21\text{ МГц}$ (відповідає ліміту W25Q64 до 133 МГц і забезпечує надійність сигналу на макетній платі).
 3. **ШІМ-таймер сервоприводу TIM3 CH1 (SG92R, RM0383, Section 13.4.11–12, с. 364):**
    * Опорна частота таймера: 84 МГц.
    * Подільник переддільника `PSC = 83`:
      $$f_{\text{CNT}} = \frac{84\text{ МГц}}{83 + 1} = 1.0\text{ МГц} \quad (\text{крок лічильника } 1.0\text{ мкс})$$
    * Період переповнення `ARR = 19999`:
-     $$T_{\text{PWM}} = (19999 + 1) \times 1.0\text{ мкс} = 20000\text{ мкс} = \mathbf{20.0\text{ мс} \quad (50\text{ Гц})}$$
+     $$T_{\text{PWM}} = (19999 + 1) \times 1.0\text{ мкс} = 20000\text{ мкс} = 20.0\text{ мс} \quad (50\text{ Гц})$$
    * Керування кутом (тривалість імпульсу CCR1):
      * `CCR1 = 1000` (1.0 мс $\rightarrow$ 0°, засув розблоковано)
      * `CCR1 = 1500` (1.5 мс $\rightarrow$ 90°, проміжний стан)
@@ -99,9 +99,8 @@
   * W25Q64JV Flash (режим циклічного стирання блоку Sector Erase): 25.0 мА *(W25Q64JV DS, с. 61)*
   * OV7670 Camera (активне захоплення пікселів): 18.0 мА *(OV7670 DS, с. 5)*
   * FT232RL (активна передача даних по UART): 15.0 мА *(DS_FT232R, с. 15)*
-  * **Сумарний піковий струм на лінії 3.3 В:**
-    $$I_{\text{total}} = 25.0 + 3.9 + 6.43 + 25.0 + 18.0 + 15.0 = \mathbf{93.33\text{ мА}}$$
-  * **Коефіцієнт запасу:** $\frac{500\text{ мА}}{93.33\text{ мА}} \approx \mathbf{5.35}$ (лінія навантажена лише на 18.6% від номіналу).
+  * **Сумарний піковий струм на лінії 3.3 В:** $I_{\text{total}} = 25.0 + 3.9 + 6.43 + 25.0 + 18.0 + 15.0 = 93.33\text{ мА}$
+  * **Коефіцієнт запасу:** $\frac{500\text{ мА}}{93.33\text{ мА}} \approx 5.35$ (лінія навантажена лише на 18.6% від номіналу).
 
 * **Живлення силового навантаження (Сервопривід SG92R):**
   * Струм холостого ходу сервоприводу: 100–250 мА, піковий струм рушання з місця / блокування ротора: **до 500 мА** *(SG92R DS, с. 1)*.
