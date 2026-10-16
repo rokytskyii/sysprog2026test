@@ -2,7 +2,7 @@
 /**
  ******************************************************************************
  * @file           : main.c
- * @brief          : Main program body
+ * @brief          : Main program body - Lab 2 Sensor & SPI Flash Bring-Up
  ******************************************************************************
  * @attention
  *
@@ -31,7 +31,10 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define OV7670_WRITE_ADDR 0x42
+#define OV7670_READ_ADDR 0x43
+#define OV7670_REG_PID 0x0A
+#define OV7670_REG_VER 0x0B
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -48,6 +51,7 @@ SPI_HandleTypeDef hspi2;
 
 TIM_HandleTypeDef htim3;
 
+UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
@@ -62,16 +66,120 @@ static void MX_I2C1_Init(void);
 static void MX_SPI2_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_USART2_UART_Init(void);
+static void MX_USART1_UART_Init(void);
 /* USER CODE BEGIN PFP */
-
+static void I2C1_Bus_Clear(void);
+uint8_t OV7670_ReadReg_SCCB(uint8_t reg_addr);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 int _write(int fd, char *p, int n)
 {
-  HAL_UART_Transmit(&huart2, (uint8_t *)p, n, HAL_MAX_DELAY);
+  HAL_UART_Transmit(&huart2, (uint8_t *)p, n, 100);
+  HAL_UART_Transmit(&huart1, (uint8_t *)p, n, 100);
   return n;
+}
+
+// Функція апаратного розблокування шини I2C
+static void I2C1_Bus_Clear(void)
+{
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
+  __HAL_RCC_GPIOB_CLK_ENABLE();
+
+  // PB8 -> SCL як вихід Open-Drain
+  GPIO_InitStruct.Pin = GPIO_PIN_8;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  // PB9 -> SDA як вхід з підтяжкою
+  GPIO_InitStruct.Pin = GPIO_PIN_9;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  // 9 імпульсів тактування SCL для виведення слейвів зі стану передачі біта
+  for (int i = 0; i < 9; i++)
+  {
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_8, GPIO_PIN_RESET);
+    for (volatile int j = 0; j < 50; j++)
+      ;
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_8, GPIO_PIN_SET);
+    for (volatile int j = 0; j < 50; j++)
+      ;
+  }
+
+  // Генерація умови STOP
+  GPIO_InitStruct.Pin = GPIO_PIN_9;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_9, GPIO_PIN_RESET);
+  for (volatile int j = 0; j < 50; j++)
+    ;
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_8, GPIO_PIN_SET);
+  for (volatile int j = 0; j < 50; j++)
+    ;
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_9, GPIO_PIN_SET);
+  for (volatile int j = 0; j < 50; j++)
+    ;
+}
+
+// Зчитування для звичайних I2C-сенсорів (MPU, L3G, LSM, BMP)
+uint8_t ReadSensorRegister(uint16_t dev_addr, uint8_t reg_addr)
+{
+  uint8_t val = 0;
+  if (HAL_I2C_Mem_Read(&hi2c1, dev_addr, reg_addr, I2C_MEMADD_SIZE_8BIT, &val, 1, 100) == HAL_OK)
+  {
+    return val;
+  }
+  return 0xFF;
+}
+
+// Зчитування регістрів камери за протоколом SCCB (без Repeated Start)
+uint8_t OV7670_ReadReg_SCCB(uint8_t reg_addr)
+{
+  uint8_t val = 0xFF;
+
+  // 1. Запис адреси регістра із формуванням умови STOP
+  if (HAL_I2C_Master_Transmit(&hi2c1, OV7670_WRITE_ADDR, &reg_addr, 1, 50) != HAL_OK)
+  {
+    return 0xFF;
+  }
+
+  // Пауза для перемикання внутрішнього автомата камери
+  for (volatile int i = 0; i < 300; i++)
+    ;
+
+  // 2. Окреме зчитування значення із формуванням умови STOP
+  if (HAL_I2C_Master_Receive(&hi2c1, OV7670_READ_ADDR, &val, 1, 50) != HAL_OK)
+  {
+    return 0xFF;
+  }
+
+  return val;
+}
+
+// Зчитування JEDEC ID з Flash-пам'яті W25Q64JV
+uint8_t W25Q_ReadJEDEC(uint8_t *id_buf)
+{
+  uint8_t tx[4] = {0x9F, 0x00, 0x00, 0x00};
+  uint8_t rx[4] = {0};
+
+  HAL_GPIO_WritePin(FLASH_CS_GPIO_Port, FLASH_CS_Pin, GPIO_PIN_RESET);
+  HAL_StatusTypeDef status = HAL_SPI_TransmitReceive(&hspi2, tx, rx, 4, 100);
+  HAL_GPIO_WritePin(FLASH_CS_GPIO_Port, FLASH_CS_Pin, GPIO_PIN_SET);
+
+  if (status == HAL_OK)
+  {
+    id_buf[0] = rx[1]; // Manufacturer ID (Winbond = 0xEF)
+    id_buf[1] = rx[2]; // Memory Type (0x40)
+    id_buf[2] = rx[3]; // Capacity (64Mbit = 0x17)
+    return 1;
+  }
+  return 0;
 }
 /* USER CODE END 0 */
 
@@ -81,26 +189,25 @@ int _write(int fd, char *p, int n)
  */
 int main(void)
 {
-
-  /* USER CODE BEGIN 1 */
-
-  /* USER CODE END 1 */
-
   /* MCU Configuration--------------------------------------------------------*/
-
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
-
-  /* USER CODE BEGIN Init */
-
-  /* USER CODE END Init */
-
-  /* Configure the system clock */
   SystemClock_Config();
 
-  /* USER CODE BEGIN SysInit */
+  // 1. Апаратне очищення шини I2C
+  I2C1_Bus_Clear();
 
-  /* USER CODE END SysInit */
+  // 2. Активація генерації такту MCO1 16 МГц на PA8 (MCLK) перед увімкненням периферії
+  __HAL_RCC_GPIOA_CLK_ENABLE();
+  GPIO_InitTypeDef GPIO_InitStructMCO = {0};
+  GPIO_InitStructMCO.Pin = GPIO_PIN_8;
+  GPIO_InitStructMCO.Mode = GPIO_MODE_AF_PP;
+  GPIO_InitStructMCO.Pull = GPIO_NOPULL;
+  GPIO_InitStructMCO.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+  GPIO_InitStructMCO.Alternate = GPIO_AF0_MCO;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStructMCO);
+
+  HAL_RCC_MCOConfig(RCC_MCO1, RCC_MCO1SOURCE_HSI, RCC_MCODIV_1);
+  HAL_Delay(50); // Пауза для стабілізації камери
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
@@ -109,6 +216,8 @@ int main(void)
   MX_SPI2_Init();
   MX_TIM3_Init();
   MX_USART2_UART_Init();
+  MX_USART1_UART_Init();
+
   /* USER CODE BEGIN 2 */
   printf("\r\n==================================\r\n");
   printf("System Bring-Up & Peripheral Check\r\n");
@@ -132,6 +241,15 @@ int main(void)
     printf("[ERROR]  SPI2 Init Failed!\r\n");
   }
 
+  if (HAL_UART_GetState(&huart1) == HAL_UART_STATE_READY)
+  {
+    printf("[HAL_OK] USART1 Initialized for FT232RL (PA9/PA10 @ 115200)\r\n");
+  }
+  else
+  {
+    printf("[ERROR]  USART1 Init Failed!\r\n");
+  }
+
   HAL_GPIO_WritePin(FLASH_CS_GPIO_Port, FLASH_CS_Pin, GPIO_PIN_SET);
 
   if (HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1) == HAL_OK)
@@ -143,18 +261,95 @@ int main(void)
     printf("[ERROR]  TIM3 PWM Start Failed!\r\n");
   }
 
-  printf("Starting probe loop for Saleae Logic...\r\n");
+  // Опитування ідентифікаторів камери через протокол SCCB
+  uint8_t init_cam_pid = OV7670_ReadReg_SCCB(OV7670_REG_PID);
+  uint8_t init_cam_ver = OV7670_ReadReg_SCCB(OV7670_REG_VER);
+  if (init_cam_pid == 0x76)
+  {
+    printf("[HAL_OK] OV7670 Camera Detected (PID: 0x%02X, VER: 0x%02X)\r\n", init_cam_pid, init_cam_ver);
+  }
+  else
+  {
+    printf("[WARN]   OV7670 Check: PID=0x%02X, VER=0x%02X (Expected 0x76, 0x70)\r\n", init_cam_pid, init_cam_ver);
+  }
+
+  printf("Starting diagnostic loop for sensors, camera & FT232RL echo test...\r\n");
+  printf("Tip: type any key in PuTTY (FT232RL COM port) to test RX line!\r\n\r\n");
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  uint8_t step = 0;
+  uint32_t last_sensor_tick = 0;
+  uint8_t rx_byte = 0;
+
   while (1)
   {
-    HAL_I2C_IsDeviceReady(&hi2c1, (0x68 << 1), 2, 50);
+    if (__HAL_UART_GET_FLAG(&huart1, UART_FLAG_ORE))
+    {
+      __HAL_UART_CLEAR_OREFLAG(&huart1);
+    }
 
-    HAL_Delay(1000);
-    printf("tick %lu | I2C Probe Sent\r\n", HAL_GetTick());
-    HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+    if (HAL_UART_Receive(&huart1, &rx_byte, 1, 5) == HAL_OK)
+    {
+      printf("\r\n>>> [FT232RL RX Echo]: Received '%c' (ASCII %d / 0x%02X) <<<\r\n\r\n", rx_byte, rx_byte, rx_byte);
+      HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+    }
+
+    if (HAL_GetTick() - last_sensor_tick >= 1500)
+    {
+      last_sensor_tick = HAL_GetTick();
+
+      uint8_t mpu_id = ReadSensorRegister(0x68 << 1, 0x75);
+      uint8_t l3g_id = ReadSensorRegister(0x6B << 1, 0x0F);
+      uint8_t lsm_id = ReadSensorRegister(0x1D << 1, 0x0F);
+      uint8_t bmp_id = ReadSensorRegister(0x77 << 1, 0xD0);
+
+      // Опитування регістрів камери за протоколом SCCB
+      uint8_t cam_pid = OV7670_ReadReg_SCCB(OV7670_REG_PID);
+      uint8_t cam_ver = OV7670_ReadReg_SCCB(OV7670_REG_VER);
+
+      uint8_t flash_id[3] = {0, 0, 0};
+      uint8_t flash_ok = W25Q_ReadJEDEC(flash_id);
+
+      uint16_t servo_pulse = 1500;
+      const char *angle_str = "90 deg";
+
+      if (step == 0)
+      {
+        servo_pulse = 1000;
+        angle_str = " 0 deg";
+        step = 1;
+      }
+      else if (step == 1)
+      {
+        servo_pulse = 1500;
+        angle_str = "90 deg";
+        step = 2;
+      }
+      else
+      {
+        servo_pulse = 2000;
+        angle_str = "180 deg";
+        step = 0;
+      }
+
+      __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, servo_pulse);
+
+      printf("Tick %lu | MPU: 0x%02X | L3G: 0x%02X | LSM: 0x%02X | BMP: 0x%02X | CAM: 0x%02X:0x%02X | Flash: [%s] | Servo: %s (Pulse %u)\r\n",
+             HAL_GetTick(),
+             mpu_id,
+             l3g_id,
+             lsm_id,
+             bmp_id,
+             cam_pid,
+             cam_ver,
+             flash_ok ? "OK" : "ERR",
+             angle_str,
+             servo_pulse);
+
+      HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+    }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -171,14 +366,9 @@ void SystemClock_Config(void)
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
-  /** Configure the main internal regulator output voltage
-   */
   __HAL_RCC_PWR_CLK_ENABLE();
   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
 
-  /** Initializes the RCC Oscillators according to the specified parameters
-   * in the RCC_OscInitTypeDef structure.
-   */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
@@ -193,8 +383,6 @@ void SystemClock_Config(void)
     Error_Handler();
   }
 
-  /** Initializes the CPU, AHB and APB buses clocks
-   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
@@ -207,26 +395,10 @@ void SystemClock_Config(void)
   }
 }
 
-/**
- * @brief ADC1 Initialization Function
- * @param None
- * @retval None
- */
 static void MX_ADC1_Init(void)
 {
-
-  /* USER CODE BEGIN ADC1_Init 0 */
-
-  /* USER CODE END ADC1_Init 0 */
-
   ADC_ChannelConfTypeDef sConfig = {0};
 
-  /* USER CODE BEGIN ADC1_Init 1 */
-
-  /* USER CODE END ADC1_Init 1 */
-
-  /** Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion)
-   */
   hadc1.Instance = ADC1;
   hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
   hadc1.Init.Resolution = ADC_RESOLUTION_12B;
@@ -244,8 +416,6 @@ static void MX_ADC1_Init(void)
     Error_Handler();
   }
 
-  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
-   */
   sConfig.Channel = ADC_CHANNEL_0;
   sConfig.Rank = 1;
   sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
@@ -253,26 +423,10 @@ static void MX_ADC1_Init(void)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN ADC1_Init 2 */
-
-  /* USER CODE END ADC1_Init 2 */
 }
 
-/**
- * @brief I2C1 Initialization Function
- * @param None
- * @retval None
- */
 static void MX_I2C1_Init(void)
 {
-
-  /* USER CODE BEGIN I2C1_Init 0 */
-
-  /* USER CODE END I2C1_Init 0 */
-
-  /* USER CODE BEGIN I2C1_Init 1 */
-
-  /* USER CODE END I2C1_Init 1 */
   hi2c1.Instance = I2C1;
   hi2c1.Init.ClockSpeed = 100000;
   hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
@@ -286,27 +440,10 @@ static void MX_I2C1_Init(void)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN I2C1_Init 2 */
-
-  /* USER CODE END I2C1_Init 2 */
 }
 
-/**
- * @brief SPI2 Initialization Function
- * @param None
- * @retval None
- */
 static void MX_SPI2_Init(void)
 {
-
-  /* USER CODE BEGIN SPI2_Init 0 */
-
-  /* USER CODE END SPI2_Init 0 */
-
-  /* USER CODE BEGIN SPI2_Init 1 */
-
-  /* USER CODE END SPI2_Init 1 */
-  /* SPI2 parameter configuration*/
   hspi2.Instance = SPI2;
   hspi2.Init.Mode = SPI_MODE_MASTER;
   hspi2.Init.Direction = SPI_DIRECTION_2LINES;
@@ -323,30 +460,14 @@ static void MX_SPI2_Init(void)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN SPI2_Init 2 */
-
-  /* USER CODE END SPI2_Init 2 */
 }
 
-/**
- * @brief TIM3 Initialization Function
- * @param None
- * @retval None
- */
 static void MX_TIM3_Init(void)
 {
-
-  /* USER CODE BEGIN TIM3_Init 0 */
-
-  /* USER CODE END TIM3_Init 0 */
-
   TIM_ClockConfigTypeDef sClockSourceConfig = {0};
   TIM_MasterConfigTypeDef sMasterConfig = {0};
   TIM_OC_InitTypeDef sConfigOC = {0};
 
-  /* USER CODE BEGIN TIM3_Init 1 */
-
-  /* USER CODE END TIM3_Init 1 */
   htim3.Instance = TIM3;
   htim3.Init.Prescaler = 83;
   htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
@@ -380,27 +501,27 @@ static void MX_TIM3_Init(void)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN TIM3_Init 2 */
-
-  /* USER CODE END TIM3_Init 2 */
   HAL_TIM_MspPostInit(&htim3);
 }
 
-/**
- * @brief USART2 Initialization Function
- * @param None
- * @retval None
- */
+static void MX_USART1_UART_Init(void)
+{
+  huart1.Instance = USART1;
+  huart1.Init.BaudRate = 115200;
+  huart1.Init.WordLength = UART_WORDLENGTH_8B;
+  huart1.Init.StopBits = UART_STOPBITS_1;
+  huart1.Init.Parity = UART_PARITY_NONE;
+  huart1.Init.Mode = UART_MODE_TX_RX;
+  huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart1.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(&huart1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+}
+
 static void MX_USART2_UART_Init(void)
 {
-
-  /* USER CODE BEGIN USART2_Init 0 */
-
-  /* USER CODE END USART2_Init 0 */
-
-  /* USER CODE BEGIN USART2_Init 1 */
-
-  /* USER CODE END USART2_Init 1 */
   huart2.Instance = USART2;
   huart2.Init.BaudRate = 115200;
   huart2.Init.WordLength = UART_WORDLENGTH_8B;
@@ -413,91 +534,48 @@ static void MX_USART2_UART_Init(void)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN USART2_Init 2 */
-
-  /* USER CODE END USART2_Init 2 */
 }
 
-/**
- * @brief GPIO Initialization Function
- * @param None
- * @retval None
- */
 static void MX_GPIO_Init(void)
 {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
-  /* USER CODE BEGIN MX_GPIO_Init_1 */
 
-  /* USER CODE END MX_GPIO_Init_1 */
-
-  /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOH_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
-  /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(FLASH_CS_GPIO_Port, FLASH_CS_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin : B1_Pin */
   GPIO_InitStruct.Pin = B1_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : LD2_Pin */
   GPIO_InitStruct.Pin = LD2_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(LD2_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : FLASH_CS_Pin */
   GPIO_InitStruct.Pin = FLASH_CS_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(FLASH_CS_GPIO_Port, &GPIO_InitStruct);
-
-  /* USER CODE BEGIN MX_GPIO_Init_2 */
-
-  /* USER CODE END MX_GPIO_Init_2 */
 }
 
-/* USER CODE BEGIN 4 */
-
-/* USER CODE END 4 */
-
-/**
- * @brief  This function is executed in case of error occurrence.
- * @retval None
- */
 void Error_Handler(void)
 {
-  /* USER CODE BEGIN Error_Handler_Debug */
-  /* User can add his own implementation to report the HAL error return state */
   __disable_irq();
   while (1)
   {
   }
-  /* USER CODE END Error_Handler_Debug */
 }
+
 #ifdef USE_FULL_ASSERT
-/**
- * @brief  Reports the name of the source file and the source line number
- *         where the assert_param error has occurred.
- * @param  file: pointer to the source file name
- * @param  line: assert_param error line source number
- * @retval None
- */
 void assert_failed(uint8_t *file, uint32_t line)
 {
-  /* USER CODE BEGIN 6 */
-  /* User can add his own implementation to report the file name and line number,
-     ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-  /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
