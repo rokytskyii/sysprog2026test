@@ -4,8 +4,10 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     make \
+    gcc \
     gcc-arm-none-eabi \
     binutils-arm-none-eabi \
+    libc6-dev \
     libnewlib-arm-none-eabi \
     libstdc++-arm-none-eabi-newlib \
     python3 \
