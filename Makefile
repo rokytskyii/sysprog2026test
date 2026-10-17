@@ -10,3 +10,6 @@ endif
 
 build:
 	docker run --rm -v "$(CUR_DIR):/workspace" -w /workspace $(USER_FLAG) $(IMAGE) make -C firmware all
+
+check-deps:
+	python3 scripts/check_deps.py
