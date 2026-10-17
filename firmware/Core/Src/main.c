@@ -126,9 +126,11 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   uint8_t rx_byte = 0;
+  static uint32_t last_heartbeat_tick = 0;
+
   while (1)
   {
-    // FT232RL Echo
+    // 1. FT232RL Echo
     if (__HAL_UART_GET_FLAG(&huart1, UART_FLAG_ORE))
     {
       __HAL_UART_CLEAR_OREFLAG(&huart1);
@@ -136,10 +138,16 @@ int main(void)
     if (HAL_UART_Receive(&huart1, &rx_byte, 1, 5) == HAL_OK)
     {
       printf("\r\n>>> [FT232RL Echo]: '%c' (0x%02X) <<<\r\n\r\n", rx_byte, rx_byte);
+    }
+
+    // 2. Індикація життя системи (Heartbeat LED: перемикання кожні 500 мс = 1 Гц)
+    if (HAL_GetTick() - last_heartbeat_tick >= 500)
+    {
+      last_heartbeat_tick = HAL_GetTick();
       HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
     }
 
-    // Виконання кроку логіки додатку
+    // 3. Виконання логіки прикладного рівня
     app_run_step(HAL_GetTick());
   }
   /* USER CODE END WHILE */

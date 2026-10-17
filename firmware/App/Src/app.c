@@ -40,13 +40,13 @@ void app_init(const i2c_interface_t *i2c_bus,
     // 1. Ініціалізація сервоприводу
     if (servo_init(&s_servo, pwm_bus))
     {
-        printf("[HAL_OK] TIM3 PWM Servo Initialized (50Hz on PA6)\r\n");
+        printf("[OK]     TIM3 PWM Servo Initialized (50Hz on PA6)\r\n");
     }
 
     // 2. Ініціалізація MPU-6050
     if (mpu6050_init(&s_mpu, i2c_bus, MPU6050_DEFAULT_ADDR))
     {
-        printf("[HAL_OK] MPU-6050 Detected and Initialized (Addr: 0x68)\r\n");
+        printf("[OK]     MPU-6050 Detected and Initialized (Addr: 0x68)\r\n");
     }
     else
     {
@@ -62,7 +62,7 @@ void app_init(const i2c_interface_t *i2c_bus,
     // 4. Ініціалізація барометра BMP180
     if (bmp180_init(&s_bmp, i2c_bus, BMP180_DEFAULT_ADDR, delay_ms))
     {
-        printf("[HAL_OK] BMP180 Detected & Calibrated (Addr: 0x77)\r\n");
+        printf("[OK]     BMP180 Detected & Calibrated (Addr: 0x77)\r\n");
     }
     else
     {
@@ -74,7 +74,7 @@ void app_init(const i2c_interface_t *i2c_bus,
     ov7670_init(&s_camera, sccb_bus, OV7670_SCCB_ADDR);
     if (ov7670_read_id(&s_camera, &cam_pid, &cam_ver) && cam_pid == 0x76)
     {
-        printf("[HAL_OK] OV7670 Camera Detected (PID: 0x%02X, VER: 0x%02X)\r\n", cam_pid, cam_ver);
+        printf("[OK]     OV7670 Camera Detected (PID: 0x%02X, VER: 0x%02X)\r\n", cam_pid, cam_ver);
     }
     else
     {
@@ -85,7 +85,7 @@ void app_init(const i2c_interface_t *i2c_bus,
     uint8_t mfg = 0, type = 0, cap = 0;
     if (w25q64_init(&s_flash, spi_bus) && w25q64_read_jedec_id(&s_flash, &mfg, &type, &cap))
     {
-        printf("[HAL_OK] Winbond W25Q64JV Detected (JEDEC: %02X %02X %02X)\r\n", mfg, type, cap);
+        printf("[OK]     Winbond W25Q64JV Detected (JEDEC: %02X %02X %02X)\r\n", mfg, type, cap);
         bool test_ok = w25q64_self_test(&s_flash, FLASH_TEST_ADDR);
         printf("[FLASH]  Data Integrity Write/Read Test: [%s]\r\n", test_ok ? "VERIFIED (100% MATCH)" : "FAILED");
     }
