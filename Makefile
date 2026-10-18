@@ -15,7 +15,7 @@ check-deps:
 	python3 scripts/check_deps.py
 
 test:
-	docker run --rm -v "D:/sysprog2026test:/workspace" -w /workspace stm32-build gcc -Wall -Wextra -Og \
+	docker run --rm -v "$(CURDIR):/workspace" -w /workspace stm32-build gcc -Wall -Wextra -Og \
 		-I firmware/Platform/Inc -I firmware/Devices/Inc -I firmware/App/Inc \
 		tests/test_devices.c \
 		firmware/Devices/Src/mpu6050.c \
@@ -24,4 +24,4 @@ test:
 		firmware/Devices/Src/servo.c \
 		firmware/Devices/Src/ov7670.c \
 		-lm -o tests/runner
-	docker run --rm -v "D:/sysprog2026test:/workspace" -w /workspace stm32-build ./tests/runner
+	docker run --rm -v "$(CURDIR):/workspace" -w /workspace stm32-build ./tests/runner
