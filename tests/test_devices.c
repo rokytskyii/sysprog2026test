@@ -81,36 +81,33 @@ static void test_mpu6050_accel_real_trace_vector(void)
 
     mpu6050_t dev;
     assert(mpu6050_init(&dev, &mock_bus, 0x68) == true);
-    assert(s_mock_mpu_reg == 0x6B); // Перевірка пробудження через PWR_MGMT_1
+    assert(s_mock_mpu_reg == 0x1C); // Останній запис init: ACCEL_CONFIG (±8g)
 
-    // Тестовий вектор №1: Ідеальна статика 1.00g (Z = 16384 LSB = 0x4000)
+    // Тестовий вектор №1: статика 1.00g при шкалі ±8g (4096 LSB/g, Z = 0x1000)
     s_mock_mpu_bytes[0] = 0x00;
     s_mock_mpu_bytes[1] = 0x00; // X = 0
     s_mock_mpu_bytes[2] = 0x00;
     s_mock_mpu_bytes[3] = 0x00; // Y = 0
-    s_mock_mpu_bytes[4] = 0x40;
-    s_mock_mpu_bytes[5] = 0x00; // Z = 16384 LSB (1.00g)
+    s_mock_mpu_bytes[4] = 0x10;
+    s_mock_mpu_bytes[5] = 0x00; // Z = 4096 LSB (1.00g @ ±8g)
 
     mpu6050_accel_data_t data;
     assert(mpu6050_read_accel(&dev, &data) == true);
     assert(fabsf(data.a_total - 1.00f) < 0.001f);
-    printf("      Вектор 1 (Ідеальна статика): |a| = %.2fg -> OK\n", data.a_total);
+    printf("      Вектор 1 (Ідеальна статика ±8g): |a| = %.2fg -> OK\n", data.a_total);
 
-    // Тестовий вектор №2: РЕАЛЬНІ БАЙТИ ІЗ ЗАХОПЛЕННЯ SALEAE LOGIC (i2c_sensors_decode.png)
-    // Байти з трейсу аналізатора: 0x0B 0xE4 (X), 0xC2 0x38 (Y), 0xEA 0x18 (Z)
-    s_mock_mpu_bytes[0] = 0x0B;
-    s_mock_mpu_bytes[1] = 0xE4; // X: raw = +3044  (+0.18g)
-    s_mock_mpu_bytes[2] = 0xC2;
-    s_mock_mpu_bytes[3] = 0x38; // Y: raw = -15816 (-0.96g)
-    s_mock_mpu_bytes[4] = 0xEA;
-    s_mock_mpu_bytes[5] = 0x18; // Z: raw = -5608  (-0.34g)
+    // Вектор №2: синтетичний удар ~2.6g по X при ±8g (raw X = 10650 ≈ 0x299A)
+    s_mock_mpu_bytes[0] = 0x29;
+    s_mock_mpu_bytes[1] = 0x9A;
+    s_mock_mpu_bytes[2] = 0x00;
+    s_mock_mpu_bytes[3] = 0x00;
+    s_mock_mpu_bytes[4] = 0x10;
+    s_mock_mpu_bytes[5] = 0x00; // Z = 1g
 
     assert(mpu6050_read_accel(&dev, &data) == true);
-
-    // Перевірка: чи розраховує драйвер модуль вектора |a| = sqrt(0.18^2 + (-0.96)^2 + (-0.34)^2) ≈ 1.03g
-    printf("      Вектор 2 (Дані з трейсу аналізатора): X:%.2fg, Y:%.2fg, Z:%.2fg\n", data.ax, data.ay, data.az);
-    printf("      Розрахований модуль вектора: |a| = %.2fg (PuTTY лог: 1.03g-1.04g) -> [MATCH]\n", data.a_total);
-    assert(data.a_total >= 1.01f && data.a_total <= 1.05f);
+    printf("      Вектор 2 (удар ±8g): X:%.2fg, Y:%.2fg, Z:%.2fg |a|=%.2fg\n",
+           data.ax, data.ay, data.az, data.a_total);
+    assert(data.a_total >= 2.5f && data.a_total <= 2.9f);
 
     printf("[PASS] test_mpu6050_accel_real_trace_vector\n\n");
 }
@@ -118,10 +115,11 @@ static void test_mpu6050_accel_real_trace_vector(void)
 /* ========================================================================= */
 /* 3. MOCK-ТЕСТ W25Q64: ПЕРЕВІРКА ПОСЛІДОВНОСТІ КОМАНД SPI FLASH            */
 /* ========================================================================= */
-#define MOCK_SPI_LOG_SIZE 16
+#define MOCK_SPI_LOG_SIZE 32
 static uint8_t s_spi_log[MOCK_SPI_LOG_SIZE];
 static uint8_t s_spi_log_len = 0;
 static bool s_mock_cs_pin = false;
+static uint8_t s_mock_sr1 = 0x00;
 
 static void mock_spi_cs_select(void) { s_mock_cs_pin = true; }
 static void mock_spi_cs_deselect(void) { s_mock_cs_pin = false; }
@@ -134,6 +132,10 @@ static bool mock_spi_transfer(const uint8_t *tx, uint8_t *rx, uint16_t len)
     if (tx && len > 0 && s_spi_log_len < MOCK_SPI_LOG_SIZE)
     {
         s_spi_log[s_spi_log_len++] = tx[0]; // Фіксуємо опкод команди
+        if (tx[0] == 0x06)
+            s_mock_sr1 |= 0x02; /* WEL */
+        if (tx[0] == 0x02 || tx[0] == 0x20 || tx[0] == 0x01)
+            s_mock_sr1 &= (uint8_t)~0x02; /* WEL clear after program/erase/WRSR */
     }
 
     if (rx && tx && tx[0] == 0x9F && len >= 4)
@@ -143,9 +145,9 @@ static bool mock_spi_transfer(const uint8_t *tx, uint8_t *rx, uint16_t len)
         rx[3] = 0x17; // 64 Mbit
     }
 
-    if (rx && tx && tx[0] == 0x05)
-    {                 // Read Status Register 1
-        rx[0] = 0x00; // Чіп вільний (BUSY = 0)
+    if (rx && tx && tx[0] == 0x05 && len >= 2)
+    { // Read Status Register 1 (cmd + dummy)
+        rx[1] = (uint8_t)(s_mock_sr1 & (uint8_t)~0x01);
     }
 
     return true;
@@ -162,23 +164,32 @@ static void test_w25q64_mock_protocol_sequence(void)
 
     w25q64_t flash;
     s_spi_log_len = 0;
+    s_mock_sr1 = 0x00;
 
-    // 1. Перевірка ініціалізації
+    // 1. Перевірка ініціалізації (release PD + JEDEC)
     assert(w25q64_init(&flash, &mock_spi) == true);
-    assert(s_spi_log[0] == 0x9F); // Обов'язкове читання JEDEC ID
+    assert(s_spi_log[0] == 0xAB); // Release power-down
+    assert(s_spi_log[1] == 0x9F); // JEDEC ID
 
     // 2. Перевірка послідовності команд запису сторінки
     s_spi_log_len = 0;
     const uint8_t dummy[4] = {0xDE, 0xAD, 0xBE, 0xEF};
     assert(w25q64_page_program(&flash, 0x007000, dummy, 4) == true);
 
-    // Вимога стандарту SPI Flash: команда 0x06 (Write Enable) ПОВИННА передувати 0x02 (Page Program)
-    assert(s_spi_log[0] == 0x06); // Write Enable
-    assert(s_spi_log[1] == 0x02); // Page Program
+    // Write Enable повинен бути перед Page Program (між ними може бути RDSR)
+    assert(s_spi_log[0] == 0x06);
+    int found_pp = 0;
+    for (uint8_t i = 1; i < s_spi_log_len; i++)
+    {
+        if (s_spi_log[i] == 0x02)
+        {
+            found_pp = 1;
+            break;
+        }
+    }
+    assert(found_pp == 1);
 
-    printf("      Послідовність команд на шині SPI:\n");
-    printf("      [1] 0x%02X (Write Enable) -> [2] 0x%02X (Page Program) -> [СТРОГО ЗА СТАНДАРТОМ]\n",
-           s_spi_log[0], s_spi_log[1]);
+    printf("      Послідовність: 0x06 (WREN) ... 0x02 (Page Program) -> OK\n");
     printf("[PASS] test_w25q64_mock_protocol_sequence\n\n");
 }
 

@@ -34,8 +34,10 @@ static void MX_USART1_UART_Init(void);
 int _write(int fd, char *p, int n)
 {
   (void)fd;
+  /* USART2 = ST-Link VCP (основний CLI). USART1 = FT232 — короткий timeout,
+   * щоб відсутній адаптер не гальмував великий dump frame. */
   HAL_UART_Transmit(&huart2, (uint8_t *)p, n, 100);
-  HAL_UART_Transmit(&huart1, (uint8_t *)p, n, 100);
+  HAL_UART_Transmit(&huart1, (uint8_t *)p, n, 5);
   return n;
 }
 
@@ -115,39 +117,21 @@ int main(void)
   // 2. Ініціалізація платформних інтерфейсів
   platform_init();
 
-  // 3. Передача керування шару додатку (App)
+  // 3. Передача керування шару додатку (App) — продукт ЛР3
   app_init(platform_get_i2c1(),
            platform_get_sccb(),
            platform_get_spi2(),
            platform_get_servo_pwm(),
+           platform_get_board_io(),
+           platform_get_camera_parallel(),
+           platform_get_cli_uart(),
            platform_delay_ms);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  uint8_t rx_byte = 0;
-  static uint32_t last_heartbeat_tick = 0;
-
   while (1)
   {
-    // 1. FT232RL Echo
-    if (__HAL_UART_GET_FLAG(&huart1, UART_FLAG_ORE))
-    {
-      __HAL_UART_CLEAR_OREFLAG(&huart1);
-    }
-    if (HAL_UART_Receive(&huart1, &rx_byte, 1, 5) == HAL_OK)
-    {
-      printf("\r\n>>> [FT232RL Echo]: '%c' (0x%02X) <<<\r\n\r\n", rx_byte, rx_byte);
-    }
-
-    // 2. Індикація життя системи (Heartbeat LED: перемикання кожні 500 мс = 1 Гц)
-    if (HAL_GetTick() - last_heartbeat_tick >= 500)
-    {
-      last_heartbeat_tick = HAL_GetTick();
-      HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
-    }
-
-    // 3. Виконання логіки прикладного рівня
     app_run_step(HAL_GetTick());
   }
   /* USER CODE END WHILE */
@@ -336,7 +320,8 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
-  HAL_GPIO_WritePin(FLASH_CS_GPIO_Port, FLASH_CS_Pin, GPIO_PIN_RESET);
+  /* CS flash має бути HIGH (деселект) з самого старту, інакше W25Q ловить шум на SPI */
+  HAL_GPIO_WritePin(FLASH_CS_GPIO_Port, FLASH_CS_Pin, GPIO_PIN_SET);
 
   GPIO_InitStruct.Pin = B1_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;

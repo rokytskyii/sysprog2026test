@@ -8,8 +8,15 @@
 
 typedef struct
 {
+    int16_t ac1;
+    int16_t ac2;
+    int16_t ac3;
+    uint16_t ac4;
     uint16_t ac5;
     uint16_t ac6;
+    int16_t b1;
+    int16_t b2;
+    int16_t mb;
     int16_t mc;
     int16_t md;
 } bmp180_calib_t;
@@ -20,11 +27,13 @@ typedef struct
     uint8_t dev_addr;
     bmp180_calib_t calib;
     void (*delay_ms)(uint32_t ms);
+    int32_t b5; /* cached from last temperature conversion */
 } bmp180_t;
 
 bool bmp180_init(bmp180_t *dev, const i2c_interface_t *bus, uint8_t dev_addr, void (*delay_ms)(uint32_t));
 bool bmp180_read_id(bmp180_t *dev, uint8_t *id);
 bool bmp180_read_temperature(bmp180_t *dev, int16_t *temp_c_x10);
+bool bmp180_read_pressure(bmp180_t *dev, int32_t *pressure_pa);
 
 /** Функція розрахунку компенсації температури за формулою Bosch (для тестів на хості) */
 int16_t bmp180_calculate_temperature(int32_t ut, const bmp180_calib_t *calib);

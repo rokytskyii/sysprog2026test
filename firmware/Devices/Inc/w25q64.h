@@ -14,7 +14,10 @@ typedef struct
 
 bool w25q64_init(w25q64_t *dev, const spi_interface_t *bus);
 bool w25q64_read_jedec_id(w25q64_t *dev, uint8_t *manufacturer, uint8_t *mem_type, uint8_t *capacity);
+bool w25q64_read_status1(w25q64_t *dev, uint8_t *status);
+bool w25q64_is_busy(w25q64_t *dev);
 bool w25q64_erase_sector_4k(w25q64_t *dev, uint32_t addr);
+bool w25q64_erase_sector_4k_start(w25q64_t *dev, uint32_t addr);
 bool w25q64_page_program(w25q64_t *dev, uint32_t addr, const uint8_t *data, uint16_t len);
 bool w25q64_read_data(w25q64_t *dev, uint32_t addr, uint8_t *data, uint16_t len);
 bool w25q64_self_test(w25q64_t *dev, uint32_t test_addr);

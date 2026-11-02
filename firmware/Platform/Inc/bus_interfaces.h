@@ -60,6 +60,36 @@ extern "C"
         void (*set_pulse_us)(uint16_t pulse_us);
     } pwm_interface_t;
 
+    /* ==================== 5. Бортовий GPIO (кнопка / LED) ==================== */
+    typedef struct
+    {
+        /** true, якщо USER button натиснуто (активний низький рівень) */
+        bool (*button_is_pressed)(void);
+        void (*led_write)(bool on);
+        void (*led_toggle)(void);
+    } board_io_interface_t;
+
+    /* ==================== 6. Паралельна шина камери (без DCMI) ==================== */
+    typedef struct
+    {
+        /**
+         * @brief Захоплення кадру QQVGA grayscale (Y з YUYV) у буфер
+         * @param dst Буфер розміром width*height байт
+         * @param width Очікувана ширина (160)
+         * @param height Очікувана висота (120)
+         * @param timeout_ms Таймаут очікування синхросигналів
+         * @return true якщо кадр зчитано повністю
+         */
+        bool (*capture_gray)(uint8_t *dst, uint16_t width, uint16_t height, uint32_t timeout_ms);
+    } camera_parallel_interface_t;
+
+    /* ==================== 7. Неблокуючий прийом CLI (один байт) ==================== */
+    typedef struct
+    {
+        /** Повертає true і кладе байт у *out, якщо є дані в RX */
+        bool (*read_byte)(uint8_t *out);
+    } uart_rx_interface_t;
+
 #ifdef __cplusplus
 }
 #endif
