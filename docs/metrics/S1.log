@@ -1,0 +1,52 @@
+=======================================================
+  Incident Recorder: Black Box (Lab 3 product)
+  Super-loop | QQVGA gray | git=1f0dbc4
+=======================================================
+[OK]     Servo PWM ready
+[OK]     MPU-6050 ±8g @100Hz
+[OK]     BMP180 ready
+[OK]     OV7670 QQVGA YUV configured (PID=0x76)
+[OK]  W25Q64 JEDEC EF 40 17 SR1=0x00 self-test=PASS
+
+Type 'help'. Button B1 / impact / tilt -> incident.
+Default state: IDLE (1 Hz LED). Use 'arm' for Armed mode.
+
+LOAD pct=13
+LOAD pct=17
+LOAD pct=17
+[OK] stats cleared
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+STAT name=imu n=2505 min_us=1565 avg_us=1566 max_us=1569
+STAT name=baro n=25 min_us=18560 avg_us=18562 max_us=18564
+STAT name=camera n=0
+STAT name=journal n=0
+STAT name=loop n=4268905 min_us=3 avg_us=4 max_us=18569
+STAT name=btn_latency n=0
+IMU_JITTER min_us=-572 max_us=10571 missed=25
+LOAD pct=16
+LOAD pct=17
+STACK used=656 reserve=1024 free=368

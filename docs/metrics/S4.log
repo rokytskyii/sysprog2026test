@@ -1,0 +1,386 @@
+ct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pLOAD pct=17
+LOAD pct=17
+LOAD pct=17
+
+=======================================================
+  Incident Recorder: Black Box (Lab 3 product)
+  Super-loop | QQVGA gray | git=1f0dbc4
+=======================================================
+[OK]     Servo PWM ready
+[OK]     MPU-6050 ±8g @100Hz
+[OK]     BMP180 ready
+[OK]     OV7670 QQVGA YUV configured (PID=0x76)
+[OK]  W25Q64 JEDEC EF 40 17 SR1=0x00 self-test=PASS
+
+Type 'help'. Button B1 / impact / tilt -> incident.
+Default state: IDLE (1 Hz LED). Use 'arm' for Armed mode.
+
+LOAD pct=13
+LOAD pct=17
+[SYS] Armed — servo locked (180 deg)
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+status mode=cargo sys=ARMED |a|=1.01g pitch=-3.8 roll=-13.9 T=21.2C P=100409Pa cam=1 flash=1 jrn=0
+LOAD pct=17
+LOAD pct=17
+[ERR] Unknown: 'sarm' (try help)
+LOAD pct=17
+LOAD pct=17
+[SYS] Armed — servo locked (180 deg)
+LOAD pct=17
+LOAD pct=17
+EVT t_us=12654985 name=btn_press
+EVT t_us=12662504 name=incident
+[ALARM] Incident trigger=button |a|=1.01g pitch=-3.8 roll=-13.9
+EVT t_us=12679747 name=capture_start
+[CAM] Capture start (QQVGA gray)...
+EVT t_us=13134516 name=capture_done
+[CAM] Capture OK
+EVT t_us=13144199 name=flash_write_start
+LOAD pct=50
+EVT t_us=13559694 name=flash_write_done
+[FLASH] Journal slot 0 seq=1 saved (frame=19200 B)
+LOAD pct=23
+LOAD pct=17
+Commands:
+  help              - this help
+  status            - system status
+  mode cargo|site   - select mode
+  arm | disarm      - lock/unlock servo
+  dump log          - dump journal headers
+  dump frame N      - dump slot N grayscale frame (hex) to PC
+  STATS             - DWT task stats (min/avg/max)
+  MEM               - stack usage (painting)
+  reset             - clear incident -> idle
+  sim incident      - software incident trigger
+LOAD pct=16
+LOAD pct=17
+[SYS] Idle — servo unlocked
+[OK] faults cleared
+LOAD pct=17
+LOAD pct=17
+EVT t_us=19248986 name=btn_press
+EVT t_us=19256509 name=incident
+[ALARM] Incident trigger=button |a|=1.00g pitch=-3.9 roll=-13.9
+EVT t_us=19273743 name=capture_start
+[CAM] Capture start (QQVGA gray)...
+EVT t_us=19731876 name=capture_done
+[CAM] Capture OK
+EVT t_us=19741554 name=flash_write_start
+[FLASH] Header verify FAIL magic=0x00000000 seq=0 SR1=0x00
+LOAD pct=57
+LOAD pct=17
+LOAD pct=17
+[ERR] Unknown: 'STA' (try help)
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+[SYS] Idle — servo unlocked
+LOAD pct=17
+LOAD pct=17
+[ERR] Unknown: 'ar' (try help)
+LOAD pct=17
+LOAD pct=17
+status mode=cargo sys=IDLE |a|=1.00g pitch=-3.8 roll=-13.9 T=21.1C P=100409Pa cam=1 flash=1 jrn=0
+LOAD pct=17
+LOAD pct=17
+status mode=cargo sys=IDLE |a|=1.00g pitch=-3.9 roll=-13.9 T=21.1C P=100407Pa cam=1 flash=1 jrn=0
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+status mode=cargo sys=IDLE |a|=1.00g pitch=-3.9 roll=-13.9 T=21.2C P=100407Pa cam=1 flash=1 jrn=0
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+[SYS] Armed — servo locked (180 deg)
+LOAD pct=17
+LOAD pct=17
+EVT t_us=3093997 name=btn_press
+EVT t_us=3103992 name=incident
+[ALARM] Incident trigger=button |a|=1.00g pitch=-3.9 roll=-13.9
+EVT t_us=3120423 name=capture_start
+[CAM] Capture start (QQVGA gray)...
+EVT t_us=3587313 name=capture_done
+[CAM] Capture OK
+EVT t_us=3596829 name=flash_write_start
+EVT t_us=3992539 name=flash_write_done
+[FLASH] Journal slot 2 seq=3 saved (frame=19200 B)
+LOAD pct=63
+LOAD pct=17
+[SYS] Idle — servo unlocked
+LOAD pct=17
+LOAD pct=17
+EVT t_us=7293997 name=btn_press
+EVT t_us=7303992 name=incident
+[ALARM] Incident trigger=button |a|=1.01g pitch=-3.9 roll=-13.9
+EVT t_us=7320423 name=capture_start
+[CAM] Capture start (QQVGA gray)...
+EVT t_us=7785634 name=capture_done
+[CAM] Capture OK
+EVT t_us=7795132 name=flash_write_start
+LOAD pct=57
+[FLASH] Header verify FAIL magic=0x00000000 seq=0 SR1=0x00
+LOAD pct=18
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+status mode=cargo sys=INCIDENT |a|=1.00g pitch=-3.8 roll=-13.9 T=21.2C P=100412Pa cam=1 flash=1 jrn=0
+LOAD pct=17
+LOAD pct=17
+Commands:
+  help              - this help
+  status            - system status
+  mode cargo|site   - select mode
+  arm | disarm      - lock/unlock servo
+  dump log          - dump journal headers
+  dump frame N      - dump slot N grayscale frame (hex) to PC
+  STATS             - DWT task stats (min/avg/max)
+  MEM               - stack usage (painting)
+  reset             - clear incident -> idle
+  sim incident      - software incident trigger
+LOAD pct=16
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+status mode=cargo sys=INCIDENT |a|=1.01g pitch=-3.8 roll=-13.8 T=21.2C P=100407Pa cam=1 flash=1 jrn=0
+LOAD pct=17
+status mode=cargo sys=INCIDENT |a|=1.01g pitch=-3.8 roll=-13.9 T=21.2C P=100410Pa cam=1 flash=1 jrn=0
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+[SYS] Idle — servo unlocked
+[OK] faults cleared
+LOAD pct=17
+LOAD pct=17
+EVT t_us=28526421 name=btn_press
+EVT t_us=28535992 name=incident
+[ALARM] Incident trigger=button |a|=1.01g pitch=-3.8 roll=-13.9
+EVT t_us=28553232 name=capture_start
+[CAM] Capture start (QQVGA gray)...
+EVT t_us=28984993 name=capture_done
+[CAM] Capture OK
+EVT t_us=28994677 name=flash_write_start
+LOAD pct=54
+EVT t_us=29397788 name=flash_write_done
+[FLASH] Journal slot 4 seq=5 saved (frame=19200 B)
+LOAD pct=23
+LOAD pct=17
+[ERR] Unknown: 'clear' (try help)
+LOAD pct=17
+LOAD pct=17
+[ERR] Unknown: 'clear' (try help)
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+[ERR] Unknown: 'cl' (try help)
+LOAD pct=17
+[SYS] Idle — servo unlocked
+[OK] faults cleared
+LOAD pct=17
+LOAD pct=17
+EVT t_us=39602422 name=btn_press
+EVT t_us=39609941 name=incident
+[ALARM] Incident trigger=button |a|=1.00g pitch=-3.8 roll=-13.9
+EVT t_us=39627193 name=capture_start
+[CAM] Capture start (QQVGA gray)...
+EVT t_us=39972753 name=capture_done
+[CAM] Capture OK
+EVT t_us=39982443 name=flash_write_start
+LOAD pct=47
+[FLASH] Header verify FAIL magic=0x00000000 seq=0 SR1=0x00
+LOAD pct=18
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+[ERR] Unknown: 'sttus' (try help)
+LOAD pct=17
+status mode=cargo sys=INCIDENT |a|=1.00g pitch=-3.8 roll=-13.9 T=21.3C P=100412Pa cam=1 flash=1 jrn=0
+LOAD pct=17
+LOAD pct=17
+[SYS] Idle — servo unlocked
+[OK] faults cleared
+LOAD pct=17
+LOAD pct=17
+EVT t_us=34458859 name=btn_press
+EVT t_us=34466382 name=incident
+[ALARM] Incident trigger=button |a|=1.01g pitch=-3.8 roll=-13.9
+EVT t_us=34483616 name=capture_start
+[CAM] Capture start (QQVGA gray)...
+EVT t_us=34823790 name=capture_done
+[CAM] Capture OK
+EVT t_us=34833477 name=flash_write_start
+LOAD pct=46
+EVT t_us=35251860 name=flash_write_done
+[FLASH] Journal slot 6 seq=7 saved (frame=19200 B)
+LOAD pct=23
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+[SYS] Idle — servo unlocked
+[OK] faults cleared
+Commands:
+  help              - this help
+  status            - system status
+  mode cargo|site   - select mode
+  arm | disarm      - lock/unlock servo
+  dump log          - dump journal headers
+  dump frame N      - dump slot N grayscale frame (hex) to PC
+  STATS             - DWT task stats (min/avg/max)
+  MEM               - stack usage (painting)
+  reset             - clear incident -> idle
+  sim incident      - software incident trigger
+LOAD pct=16
+status mode=cargo sys=IDLE |a|=1.00g pitch=-3.9 roll=-13.8 T=21.2C P=100407Pa cam=1 flash=1 jrn=0
+LOAD pct=17
+LOAD pct=17
+
+=======================================================
+  Incident Recorder: Black Box (Lab 3 product)
+  Super-loop | QQVGA gray | git=1f0dbc4
+=======================================================
+[OK]     Servo PWM ready
+[OK]     MPU-6050 ±8g @100Hz
+[OK]     BMP180 ready
+[OK]     OV7670 QQVGA YUV configured (PID=0x76)
+[OK]  W25Q64 JEDEC EF 40 17 SR1=0x00 self-test=PASS
+
+Type 'help'. Button B1 / impact / tilt -> incident.
+Default state: IDLE (1 Hz LED). Use 'arm' for Armed mode.
+
+EVT t_us=783985 name=btn_press
+EVT t_us=791156 name=incident
+[ALARM] Incident trigger=button |a|=1.00g pitch=-3.2 roll=-15.1
+EVT t_us=807986 name=capture_start
+[CAM] Capture start (QQVGA gray)...
+EVT t_us=1339237 name=capture_done
+[CAM] Capture OK
+EVT t_us=1348745 name=flash_write_start
+LOAD pct=46
+EVT t_us=1766861 name=flash_write_done
+[FLASH] Journal slot 0 seq=1 saved (frame=19200 B)
+LOAD pct=23

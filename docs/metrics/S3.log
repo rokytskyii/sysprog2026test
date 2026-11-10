@@ -1,0 +1,109 @@
+[OK] stats cleared
+LOAD pct=17
+LOAD pct=17
+[SYS] Armed — servo locked (180 deg)
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+EVT t_us=22444140 name=incident
+[ALARM] Incident trigger=button |a|=1.00g pitch=-3.7 roll=-13.9
+EVT t_us=22461388 name=capture_start
+[CAM] Capture start (QQVGA gray)...
+EVT t_us=22979554 name=capture_done
+[CAM] Capture OK
+EVT t_us=22989236 name=flash_write_start
+LOAD pct=54
+EVT t_us=23388421 name=flash_write_done
+[FLASH] Journal slot 1 seq=2 saved (frame=19200 B)
+LOAD pct=23
+LOAD pct=17
+LOAD pct=17
+status mode=cargo sys=INCIDENT |a|=1.00g pitch=-3.7 roll=-13.9 T=20.9C P=100403Pa cam=1 flash=1 jrn=0
+LOAD pct=17
+Commands:
+  help              - this help
+  status            - system status
+  mode cargo|site   - select mode
+  arm | disarm      - lock/unlock servo
+  dump log          - dump journal headers
+  dump frame N      - dump slot N grayscale frame (hex) to PC
+  STATS             - DWT task stats (min/avg/max)
+  MEM               - stack usage (painting)
+  reset             - clear incident -> idle
+  sim incident      - software incident trigger
+LOAD pct=16
+status mode=cargo sys=INCIDENT |a|=1.00g pitch=-3.7 roll=-13.8 T=20.9C P=100415Pa cam=1 flash=1 jrn=0
+LOAD pct=17
+[ERR] Unknown: 'lkhelp' (try help)
+LOAD pct=17
+Commands:
+  help              - this help
+  status            - system status
+  mode cargo|site   - select mode
+  arm | disarm      - lock/unlock servo
+  dump log          - dump journal headers
+  dump frame N      - dump slot N grayscale frame (hex) to PC
+  STATS             - DWT task stats (min/avg/max)
+  MEM               - stack usage (painting)
+  reset             - clear incident -> idle
+  sim incident      - software incident trigger
+LOAD pct=16
+status mode=cargo sys=INCIDENT |a|=1.01g pitch=-3.7 roll=-13.8 T=20.9C P=100409Pa cam=1 flash=1 jrn=0
+LOAD pct=17
+Commands:
+  help              - this help
+  status            - system status
+  mode cargo|site   - select mode
+  arm | disarm      - lock/unlock servo
+  dump log          - dump journal headers
+  dump frame N      - dump slot N grayscale frame (hex) to PC
+  STATS             - DWT task stats (min/avg/max)
+  MEM               - stack usage (painting)
+  reset             - clear incident -> idle
+  sim incident      - software incident trigger
+LOAD pct=16
+LOAD pct=17
+status mode=cargo sys=INCIDENT |a|=1.01g pitch=-3.7 roll=-13.9 T=20.9C P=100412Pa cam=1 flash=1 jrn=0
+LOAD pct=17
+Commands:
+  help              - this help
+  status            - system status
+  mode cargo|site   - select mode
+  arm | disarm      - lock/unlock servo
+  dump log          - dump journal headers
+  dump frame N      - dump slot N grayscale frame (hex) to PC
+  STATS             - DWT task stats (min/avg/max)
+  MEM               - stack usage (painting)
+  reset             - clear incident -> idle
+  sim incident      - software incident trigger
+LOAD pct=16
+status mode=cargo sys=INCIDENT |a|=1.00g pitch=-3.7 roll=-13.8 T=20.9C P=100409Pa cam=1 flash=1 jrn=0
+LOAD pct=17
+Commands:
+  help              - this help
+  status            - system status
+  mode cargo|site   - select mode
+  arm | disarm      - lock/unlock servo
+  dump log          - dump journal headers
+  dump frame N      - dump slot N grayscale frame (hex) to PC
+  STATS             - DWT task stats (min/avg/max)
+  MEM               - stack usage (painting)
+  reset             - clear incident -> idle
+  sim incident      - software incident trigger
+LOAD pct=16
+LOAD pct=17
+LOAD pct=17
+STAT name=imu n=2229 min_us=1565 avg_us=1566 max_us=1569
+STAT name=baro n=24 min_us=18081 avg_us=18449 max_us=18699
+STAT name=camera n=1 min_us=505073 avg_us=505073 max_us=505073
+STAT name=journal n=83 min_us=25 avg_us=844 max_us=16246
+STAT name=loop n=3704920 min_us=3 avg_us=5 max_us=552470
+STAT name=btn_latency n=1 min_us=0 avg_us=0 max_us=0
+IMU_JITTER min_us=-758 max_us=551472 missed=27
+LOAD pct=16
+[ERR] Unknown: 'mEM' (try help)
+LOAD pct=17
+STACK used=864 reserve=1024 free=160
+LOAD pct=17
+LOAD pct=17

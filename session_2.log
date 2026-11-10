@@ -1,0 +1,137 @@
+OAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOADLOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+
+=======================================================
+  Incident Recorder: Black Box (Lab 3 product)
+  Super-loop | QQVGA gray | git=1f0dbc4
+=======================================================
+[OK]     Servo PWM ready
+[OK]     MPU-6050 ±8g @100Hz
+[OK]     BMP180 ready
+[OK]     OV7670 QQVGA YUV configured (PID=0x76)
+[OK]  W25Q64 JEDEC EF 40 17 SR1=0x00 self-test=PASS
+
+Type 'help'. Button B1 / impact / tilt -> incident.
+Default state: IDLE (1 Hz LED). Use 'arm' for Armed mode.
+
+LOAD pct=13
+[SYS] Armed — servo locked (180 deg)
+LOAD pct=17
+LOAD pct=17
+status mode=cargo sys=ARMED |a|=1.00g pitch=-3.8 roll=-13.9 T=21.1C P=100406Pa cam=1 flash=1 jrn=0
+LOAD pct=17
+LOAD pct=17
+EVT t_us=5722985 name=btn_press
+EVT t_us=5730330 name=incident
+[ALARM] Incident trigger=button |a|=1.01g pitch=-3.9 roll=-13.9
+EVT t_us=5746986 name=capture_start
+[CAM] Capture start (QQVGA gray)...
+EVT t_us=6137316 name=capture_done
+[CAM] Capture OK
+EVT t_us=6146823 name=flash_write_start
+LOAD pct=45
+EVT t_us=6561226 name=flash_write_done
+[FLASH] Journal slot 0 seq=1 saved (frame=19200 B)
+EVT t_us=6629985 name=btn_press
+EVT t_us=6928986 name=btn_press
+LOAD pct=23
+EVT t_us=7213988 name=btn_press
+EVT t_us=7466988 name=btn_press
+EVT t_us=7915987 name=btn_press
+LOAD pct=17
+EVT t_us=8647560 name=btn_press
+LOAD pct=17
+EVT t_us=9345987 name=btn_press
+EVT t_us=10104987 name=btn_press
+LOAD pct=17
+LOAD pct=17
+EVT t_us=11841987 name=btn_press
+LOAD pct=17
+status mode=cargo sys=INCIDENT |a|=1.00g pitch=-3.9 roll=-13.9 T=21.1C P=100412Pa cam=1 flash=1 jrn=0
+EVT t_us=12923988 name=btn_press
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+EVT t_us=16189989 name=btn_press
+status mode=cargo sys=INCIDENT |a|=1.01g pitch=-3.9 roll=-13.9 T=21.1C P=100401Pa cam=1 flash=1 jrn=0
+EVT t_us=16801560 name=btn_press
+LOAD pct=17
+EVT t_us=17427559 name=btn_press
+EVT t_us=18070987 name=btn_press
+LOAD pct=17
+EVT t_us=18638557 name=btn_press
+LOAD pct=17
+EVT t_us=19228560 name=btn_press
+EVT t_us=19818556 name=btn_press
+LOAD pct=17
+EVT t_us=20495984 name=btn_press
+LOAD pct=17
+EVT t_us=21748985 name=btn_press
+[ERR] Unknown: 'staus' (try help)
+LOAD pct=17
+EVT t_us=22255985 name=btn_press
+EVT t_us=22582988 name=btn_press
+EVT t_us=23144988 name=btn_press
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+EVT t_us=25403988 name=btn_press
+status mode=cargo sys=INCIDENT |a|=1.01g pitch=-3.9 roll=-13.9 T=21.1C P=100409Pa cam=1 flash=1 jrn=0
+LOAD pct=17
+EVT t_us=26653987 name=btn_press
+LOAD pct=17
+LOAD pct=17
+EVT t_us=29004987 name=btn_press
+LOAD pct=17
+EVT t_us=29607987 name=btn_press
+status mode=cargo sys=INCIDENT |a|=1.00g pitch=-3.9 roll=-13.9 T=21.1C P=100401Pa cam=1 flash=1 jrn=0
+LOAD pct=17
+LOAD pct=17
+LOAD pct=17
+STAT name=imu n=3151 min_us=1565 avg_us=1571 max_us=18221
+STAT name=baro n=32 min_us=18074 avg_us=18358 max_us=18700
+STAT name=camera n=1 min_us=377412 avg_us=377412 max_us=377412
+STAT name=journal n=83 min_us=25 avg_us=844 max_us=16069
+STAT name=loop n=5252277 min_us=3 avg_us=4 max_us=425255
+STAT name=btn_latency n=1 min_us=7344 avg_us=7344 max_us=7344
+IMU_JITTER min_us=-5785 max_us=417546 missed=21
+LOAD pct=16
+STACK used=864 reserve=1024 free=160
+LOAD pct=17
+LOAD pct=17
